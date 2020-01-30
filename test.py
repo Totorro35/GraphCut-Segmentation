@@ -5,6 +5,28 @@ import maxflow
 from matplotlib import pyplot as ppl
 import math
 
+def computePdf(listpxl) :
+    mean = np.mean(listpxl)
+    sigma = np.std(listpxl)
+    return mean, sigma
+
+def pdf(value, mean, sigma) :
+    expo = np.exp(-0.5*((value-mean)/sigma)**2)
+    pdf = (1/(sigma*np.sqrt(2*3.14)))*expo
+    return pdf
+
+def balanceWeightsForm(value, meanForm, sigmaForm,meanBack, sigmaBack) :
+    pdfForm = pdf(value, meanForm, sigmaForm)
+    pdfBack = pdf(value, meanBack, sigmaBack)
+    balanceW = pdfForm/(pdfForm+pdfBack)
+    return balanceW
+
+def balanceWeightsBack(value, meanForm, sigmaForm,meanBack, sigmaBack) :
+    pdfObject = pdf(value, meanForm, sigmaForm)
+    pdfBack = pdf(value, meanBack, sigmaBack)
+    balanceW = pdfBack/(pdfForm+pdfBack)
+    return balanceW
+
 def delta_func(x,y) :
     if x==y:
         return 1
