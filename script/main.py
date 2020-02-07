@@ -16,9 +16,11 @@ lmbd=27
 infinity=1000000
 
 ## Recup Pixel
-color_mode=0
-F_px={}
-B_px={}
+current_class=0
+Nb_class=2
+Px=[]
+for i in range(Nb_class):
+    Px.append({})
 
 def BGRtoLalphabeta(img_in):
     split_src = cv2.split(img_in)
@@ -48,23 +50,17 @@ def pdf(value, mean, sigma) :
     pdf = (1/(sigma*np.sqrt(2*3.14)))*expo
     return pdf
 
-def balanceWeightsForm(value, meanForm, sigmaForm,meanBack, sigmaBack) :
-    pdfForm = pdf(value, meanForm, sigmaForm)
-    pdfBack = pdf(value, meanBack, sigmaBack)
-    balanceW = pdfForm/(pdfForm+pdfBack)
-    return balanceW
+def computeWeight(img,means,sigmas):
+    pdf_value=[]
+    for k in range(Nb_class):
+        pdf_value.append(pdf(img,means[k],sigmas[k]))
 
-def balanceWeightsBack(value, meanForm, sigmaForm,meanBack, sigmaBack) :
-    pdfForm = pdf(value, meanForm, sigmaForm)
-    pdfBack = pdf(value, meanBack, sigmaBack)
-    balanceW = pdfBack/(pdfForm+pdfBack)
-    return balanceW
+    sum_pdf = np.sum(pdf_value,axis=0)
+    weight = pdf_value/sum_pdf
+    sum_weight=weight[:,:,:,0]
+    for i in range(1,weight.shape[3]):
+        sum_weight += weight[:,:,:,i]
 
-def balanceToweight(weight):
-    sum_weight=weight[:,:,0]
-    for i in range(1,weight.shape[2]):
-        sum_weight += weight[:,:,i]
-    sum_weight/=weight.shape[2]
     return -lmbd*np.log(sum_weight)
 
 def wij(x,y,sigma=1) :
@@ -72,48 +68,50 @@ def wij(x,y,sigma=1) :
     return math.exp(-factor)
 
 def computeSegmentation(image):
-
     img = image
 
-    F_pdf_mean,F_pdf_sigma = computePdf(list(F_px.values()))
-    B_pdf_mean,B_pdf_sigma = computePdf(list(B_px.values()))
+    means=[]
+    sigmas=[]
+    for i in range(Nb_class):
+        mean,sigma = computePdf(list(Px[i].values()))
+        means.append(mean)
+        sigmas.append(sigma)
 
     # Create the graph.
     g = maxflow.Graph[float]()
 
-    # Add the nodes. nodeids has the identifiers of the nodes in the grid.
-    nodeids = g.add_grid_nodes((img.shape[0],img.shape[1]))
+    nodeids = g.add_grid_nodes((Nb_class-1,img.shape[0],img.shape[1]))
+    for k in range(Nb_class-1):
+        for i in range(img.shape[0]-1) :
+            for j in range(img.shape[1]-1) :
 
-    g.add_grid_tedges(nodeids, balanceToweight(balanceWeightsBack(img,F_pdf_mean,F_pdf_sigma,B_pdf_mean,B_pdf_sigma)), balanceToweight(balanceWeightsForm(img,F_pdf_mean,F_pdf_sigma,B_pdf_mean,B_pdf_sigma)))
+                gX = wij(img[i][j],img[i][j+1])
+                gY = wij(img[i][j],img[i][j+1])
 
-    for i in F_px :
-        y = i[0]
-        x = i[1]
-        g.add_tedge(nodeids[y][x],infinity,0)
+                g.add_edge(nodeids[k][i][j],nodeids[k][i+1][j],gX,0)
+                g.add_edge(nodeids[k][i][j],nodeids[k][i][j+1],gY,0)
 
-    for i in B_px :
-        y = i[0]
-        x = i[1]
-        g.add_tedge(nodeids[y][x],0,infinity)
-
-    # Add non-terminal edges with the same capacity.
-    #g.add_grid_edges(nodeids, 128)
-    for i in range(img.shape[0]-1) :
-        for j in range(img.shape[1]-1) :
-
-            gX = wij(img[i][j],img[i][j+1])
-            gY = wij(img[i][j],img[i][j+1])
-
-            g.add_edge(nodeids[i][j],nodeids[i+1][j],gX,0)
-            g.add_edge(nodeids[i][j],nodeids[i][j+1],gY,0)
+    for k in range(Nb_class-1):
+        weight = computeWeight(img,means,sigmas)
+        if k == 0:
+            g.add_grid_tedges(nodeids[k],weight[k],infinity)
+        elif k == Nb_class-1:
+            g.add_grid_tedges(nodeids[k-1],infinity,weight[k])
+        else:
+            for i in range(img.shape[0]) :
+                for j in range(img.shape[1]) :
+                    g.add_edge(nodeids[k-1][i][j],nodeids[k][i][j],weight[k][i][j],infinity)
 
     # Find the maximum flow.
     g.maxflow()
     # Get the segments of the nodes in the grid.
     sgm = g.get_grid_segments(nodeids)
 
+    print(sgm.shape)
+
     # The labels should be 1 where sgm is False and 0 otherwise.
     result = np.int_(np.logical_not(sgm))
+    result = np.sum(result,axis=0)
 
     ppl.imshow(result,cmap="plasma")
     ppl.show()
@@ -121,10 +119,16 @@ def computeSegmentation(image):
 def paint_draw(event,former_x,former_y,flags,param):
     global current_former_x,current_former_y,drawing, mode
 
-    if color_mode==0:
-        color = (0,215,255)
-    else:
-        color = (208,224,64)
+    if current_class==0:
+        color = (165,116,34)
+    elif current_class==1:
+        color = (3,92,247)
+    elif current_class==2:
+        color = (15,196,241)
+    elif current_class==3:
+        color = (104,3,217)
+    elif current_class==4:
+        color = (102,204,0)
 
     if event==cv2.EVENT_LBUTTONDOWN:
         drawing=True
@@ -133,10 +137,7 @@ def paint_draw(event,former_x,former_y,flags,param):
     elif event==cv2.EVENT_MOUSEMOVE:
         if drawing==True:
             if mode==True:
-                if color_mode==0:
-                    B_px[(former_y,former_x)]=originals_image[former_y][former_x]
-                else :
-                    F_px[(former_y,former_x)]=originals_image[former_y][former_x]
+                Px[current_class][(former_y,former_x)]=originals_image[former_y][former_x][0]
                 cv2.line(image,(current_former_x,current_former_y),(former_x,former_y),color,3)
                 current_former_x = former_x
                 current_former_y = former_y
@@ -144,10 +145,7 @@ def paint_draw(event,former_x,former_y,flags,param):
     elif event==cv2.EVENT_LBUTTONUP:
         drawing=False
         if mode==True:
-            if color_mode==0:
-                B_px[(former_y,former_x)]=originals_image[former_y][former_x][0]
-            else :
-                F_px[(former_y,former_x)]=originals_image[former_y][former_x][0]
+            Px[current_class][(former_y,former_x)]=originals_image[former_y][former_x][0]
             cv2.line(image,(current_former_x,current_former_y),(former_x,former_y),color,3)
             current_former_x = former_x
             current_former_y = former_y
@@ -195,13 +193,22 @@ if __name__ == "__main__":
             cv2.imwrite('painted_image.jpg',image)
             break
 
-        if k==114: #R Key
-            color_mode=0
-
         if k==98: #B Key
-            color_mode=1
+            current_class=0
 
         if k==99: #C Key
+            current_class=1
+
+        if k==100 and Nb_class>2: #D Key
+            current_class=2
+
+        if k==101 and Nb_class>3: #E Key
+            current_class=3
+
+        if k==102 and Nb_class>4: #F Key
+            current_class=4
+
+        if k==97: #A Key
             computeSegmentation(originals_image)
 
     cv2.destroyAllWindows()
