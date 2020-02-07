@@ -17,7 +17,7 @@ infinity=1000000
 
 ## Recup Pixel
 current_class=0
-Nb_class=2
+Nb_class=3
 Px=[]
 for i in range(Nb_class):
     Px.append({})
@@ -176,7 +176,7 @@ def build_img(dir_path):
 if __name__ == "__main__":
     args = parseArgument()
 
-    if(False):
+    if(True):
         images = build_img(args.img)
         image = cv2.merge((images[:,:,3],images[:,:,3],images[:,:,3]))
     elif(False) :
