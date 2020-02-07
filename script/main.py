@@ -176,8 +176,16 @@ def build_img(dir_path):
 if __name__ == "__main__":
     args = parseArgument()
 
-    images = build_img(args.img)
-    image = cv2.merge((images[:,:,3],images[:,:,3],images[:,:,3]))
+    if(False):
+        images = build_img(args.img)
+        image = cv2.merge((images[:,:,3],images[:,:,3],images[:,:,3]))
+    elif(False) :
+        image = cv2.imread(args.img)
+        images = image/255.
+    else :
+        image = cv2.imread(args.img)
+        images = BGRtoLalphabeta(image)
+
     cv2.namedWindow('Graph Cut Segmentation')
     cv2.resizeWindow('Graph Cut Segmentation', (1000,1000))
     cv2.setMouseCallback('Graph Cut Segmentation',paint_draw)
