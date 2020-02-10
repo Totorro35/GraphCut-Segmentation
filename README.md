@@ -1,6 +1,6 @@
 # IMM - Graph Cut Segmentation
 
-## Papers
+## Sources
 [An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision](https://discovery.ucl.ac.uk/id/eprint/13383/1/13383.pdf)  
 [PyMaxFlow](https://pmneila.github.io/PyMaxflow/tutorial.html#a-first-example)  
 [Source code](https://github.com/pmneila/PyMaxflow/)  
@@ -10,7 +10,12 @@
 ## Install
 `pip3 install -r requirements.txt`
 
-## Test
+## Script
+Segmentation par Graph Cut en version multi modale  
+Il faut selectionner dans le code si l'on choisit un mode multi-modale, RGB ou Lab.  
+`python3 script/script.py -h` pour obtenir les différentes informations.
 
-## Todo
-- Generer un graph avec les poids correctements
+## Multiclass
+Segmentation par GraphCut en version multiclass  
+Il s'agit d'une extension du premier script mais ne fonctionne pas completement en version multimodale  
+
