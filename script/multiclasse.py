@@ -177,12 +177,15 @@ if __name__ == "__main__":
     args = parseArgument()
 
     if(True):
+        #MultiModale
         images = build_img(args.img)
         image = cv2.merge((images[:,:,3],images[:,:,3],images[:,:,3]))
     elif(False) :
+        #RGB
         image = cv2.imread(args.img)
         images = image/255.
     else :
+        #LalphaBeta
         image = cv2.imread(args.img)
         images = BGRtoLalphabeta(image)
 
