@@ -1,11 +1,13 @@
 # IMM - Graph Cut Segmentation
 
 ## Sources
-[An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision](https://discovery.ucl.ac.uk/id/eprint/13383/1/13383.pdf)  
-[PyMaxFlow](https://pmneila.github.io/PyMaxflow/tutorial.html#a-first-example)  
-[Source code](https://github.com/pmneila/PyMaxflow/)  
-[Cours Graph Cut](http://mickaelpechaud.free.fr/graphcuts.pdf)  
-[DataSet](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
+Papier pour le calcul des pdfs : [An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision](https://discovery.ucl.ac.uk/id/eprint/13383/1/13383.pdf)  
+
+Librairie de Graph Cut en Python : [PyMaxFlow](https://pmneila.github.io/PyMaxflow/tutorial.html#a-first-example) - [Source code](https://github.com/pmneila/PyMaxflow/)  
+
+Cours sur les GraphCut pour la gestion des multiclasses et multimodalité : [Cours Graph Cut](http://mickaelpechaud.free.fr/graphcuts.pdf)  
+
+Jeux de données : [DataSet](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
 
 ## Install
 `pip3 install -r requirements.txt`
