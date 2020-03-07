@@ -1,4 +1,4 @@
-# IMM - Graph Cut Segmentation
+# Graph Cut Segmentation for Medical Imaging
 
 Présentation disponible [ici](GraphCut.pdf)
 
