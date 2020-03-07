@@ -1,5 +1,7 @@
 # IMM - Graph Cut Segmentation
 
+Présentation disponible [ici](GraphCut.pdf)
+
 ## Sources
 Papier pour le calcul des pdfs : [An Experimental Comparison of Min-Cut/Max-Flow Algorithms for Energy Minimization in Vision](https://discovery.ucl.ac.uk/id/eprint/13383/1/13383.pdf)  
 
